@@ -1,0 +1,64 @@
+<?php
+session_start();
+
+// Function to add an item to the cart
+function addToCart($item, $quantity, $price) {
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = array();
+    }
+
+    // Check if the item is already in the cart
+    foreach ($_SESSION['cart'] as $key => $cartItem) {
+        if ($cartItem['item'] == $item) {
+            // Update the quantity and price if the item already exists
+            $_SESSION['cart'][$key]['quantity'] += $quantity;
+            $_SESSION['cart'][$key]['price'] = $price;
+            return;
+        }
+    }
+
+    // Add the item to the cart
+    $newItem = array(
+        'item' => $item,
+        'quantity' => $quantity,
+        'price' => $price
+    );
+    $_SESSION['cart'][] = $newItem;
+}
+
+// Function to remove an item from the cart
+function removeFromCart($item) {
+    if (isset($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $key => $cartItem) {
+            if ($cartItem['item'] == $item) {
+                // Remove the item from the cart
+                unset($_SESSION['cart'][$key]);
+                return;
+            }
+        }
+    }
+}
+
+// Example usage:
+$item = 'Example Item';
+$quantity = 1;
+$price = 9.99;
+
+// Add the item to the cart
+addToCart($item, $quantity, $price);
+
+// Remove the item from the cart (when sold)
+removeFromCart($item);
+
+// Display the current contents of the cart
+if (isset($_SESSION['cart'])) {
+    foreach ($_SESSION['cart'] as $cartItem) {
+        echo 'Item: ' . $cartItem['item'] . '<br>';
+        echo 'Quantity: ' . $cartItem['quantity'] . '<br>';
+        echo 'Price: ' . $cartItem['price'] . '<br>';
+        echo '-------------------------<br>';
+    }
+} else {
+    echo 'Cart is empty.';
+}
+?>
