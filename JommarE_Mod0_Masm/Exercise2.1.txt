@@ -1,0 +1,62 @@
+include \masm32\include\masm32rt.inc
+
+.data?
+    num1 dd ?
+    
+.data
+
+    OdS1 db "Odd Number",0      ;odd string
+    EvS1 db "Even Number",0     ;even string
+    Err  db "Error!!!",10, 0
+    Erro db "You can only Enter 5 digit",0
+    
+    ;msg1 db "Enter Number: ",0
+    ;len1 db 100 dup(?)                  
+    ;input
+    
+.code
+
+main:
+
+    ;push 100
+    ;push offset num1
+    ;call StdIn          
+    ;getting the input
+
+    mov eax, sval(input("Enter Number: "))
+    mov num1, eax
+
+    cmp num1, 5
+    jne rstric
+
+    ifs:                                ;if yung value is 0 go to odds
+        mov al , byte ptr[num1]
+        test al, 0      
+        jne oddss
+        
+
+    ifss:                                ;if yung value is 1 go to even
+        mov al, byte ptr[num1]
+        test al, 1
+        je evenss
+        
+
+    oddss:
+        push offset OdS1
+        call StdOut
+        jmp exitx
+    
+    evenss:  
+        push offset EvS1
+        call StdOut
+        jmp exitx
+
+    rstric:
+        push offset Err
+        call StdOut
+        push offset Erro
+        call StdOut
+        jmp exitx
+
+  exitx:
+end main

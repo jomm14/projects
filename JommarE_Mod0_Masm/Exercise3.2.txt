@@ -1,0 +1,205 @@
+include \masm32\include\masm32rt.inc
+.data
+    ;------------------------VARIABLE'S-----------------
+    sort_arr db 100 dup(?),0
+    sort_type db 100 dup(?),0
+    arg3 db 100 dup(?),0
+    arg_mess db "Invalid Arguments",0
+    arg1_mess db "Invalid Argument 1",0
+    arg2_mess db "Invalid Argument 2",0
+    arg3_mess db "Too many arguments",0
+    arg2_ver1 db "/asc",0
+    arg2_ver2 db "/des",0
+
+    test_mess db "Oks", 0
+
+.code
+    start:
+        push offset sort_arr                ;Input User
+        push 1
+        call GetCL                          ;GetCL is for command line that you may input
+
+        push offset sort_arr
+        call StrLen                         ;Length of sort_arr
+        cmp eax, 0                          
+        jbe arg1_err                        ;jump to arg1_err if it is invalid input
+
+        push offset sort_type               ;its either asc or /des
+        push 2
+        call GetCL                  
+
+        push offset sort_type
+        call StrLen                         ;Checking eax if it is 0
+        cmp eax, 0
+        jz arg2_err                         ;Error message
+
+        push offset arg3
+        push 3
+        call GetCL
+
+        push offset arg3
+        call StrLen
+        cmp eax, 0
+        jnz arg3_err
+
+    arg1_checker:
+        push offset sort_arr                ;Input User
+        push offset arg2_ver1               ;/asc
+        call crt__stricmp                   ;compare 2 string and stored to eax
+        cmp eax, 0
+        je sort_asc1                        ;the result of cmp if equal it will jump to sort_asc1  
+        
+        push offset sort_arr                ;Input User
+        push offset arg2_ver2               ;/des
+        call crt__stricmp
+        cmp eax, 0
+        je sort_des1
+
+    arg2_checker:
+        push offset sort_type               ;Input User
+        push offset arg2_ver1               ;/asc
+        call crt__stricmp
+        cmp eax, 0
+        je sort_asc
+        push offset sort_type               ;Input User
+        push offset arg2_ver2               ;/des
+        call crt__stricmp
+        cmp eax, 0
+        je sort_des
+
+    jmp arg_err                             ;error Message
+  ;------------------------------SORT ASC-------------------------------
+    sort_asc:
+        push offset sort_arr
+        call StrLen
+        dec eax                             ;eax--
+        mov ecx, eax
+        mov esi, offset sort_arr
+
+        sorting_asc:
+            mov al, byte ptr[esi]           ;get the value that temporary store in esi and move to al
+            cmp al, byte ptr[esi+1]         ; value + 1 and compare to al
+            ja swap
+        next:    
+         inc esi                            ;esi++
+         loop sorting_asc                   ;loop
+
+        cmp ebx, 0
+        dec ebx                             ;ebx--
+        jne sort_asc
+        
+        push offset sort_arr
+        call StdOut                         ;print sort_arr
+        jmp finish
+  ;---------------------------SWAP -----------
+        swap:
+            mov dl, byte ptr[esi+1]
+            mov byte ptr[esi], dl
+            mov byte ptr[esi+1], al 
+            jmp next
+;---------------SORT DES---------------
+    sort_des:
+        push offset sort_arr
+        call StrLen
+        dec eax                             ;eax++
+        mov ecx, eax
+        mov esi, offset sort_arr
+
+        sorting_des:
+            mov al, byte ptr[esi]
+            cmp al, byte ptr[esi+1]
+            jb swap_des
+        next_des:    
+         inc esi                            ;esi++
+         loop sorting_des
+
+        cmp ebx, 0
+        dec ebx                             ;ebx--
+        jne sort_des
+        push offset sort_arr
+        call StdOut
+        jmp finish                          ;jump to finish
+
+        swap_des:               
+            mov dl, byte ptr[esi+1]
+            mov byte ptr[esi], dl
+            mov byte ptr[esi+1], al 
+            jmp next_des
+    ;-----------------------------for arg1 sorting ------------------
+    sort_asc1:
+        push offset sort_type
+        call StrLen
+        dec eax                             ;eax--
+        mov ecx, eax
+        mov esi, offset sort_type
+
+        sorting_asc1:
+            mov al, byte ptr[esi]
+            cmp al, byte ptr[esi+1]
+            ja swap1
+        next1:    
+         inc esi                             ;esi++
+         loop sorting_asc1                   ;loop to sorting_asc1
+
+        cmp ebx, 0
+        dec ebx                              ;dec--
+        jne sort_asc1
+        push offset sort_type
+        call StdOut                          ;print
+        jmp finish                           ;jump to finish
+
+        swap1:
+            mov dl, byte ptr[esi+1]
+            mov byte ptr[esi], dl
+            mov byte ptr[esi+1], al 
+            jmp next1                        ;jump to next1 lable
+
+    sort_des1:
+        push offset sort_type
+        call StrLen
+        dec eax
+        mov ecx, eax
+        mov esi, offset sort_type
+
+        sorting_des1:
+            mov al, byte ptr[esi]             ;get the value that temporary store in esi and move to al
+            cmp al, byte ptr[esi+1]           ; value + 1 and compare to al
+            jb swap_des1
+        next_des1:    
+         inc esi
+         loop sorting_des1
+
+        cmp ebx, 0
+        dec ebx
+        jne sort_des1
+        push offset sort_type
+        call StdOut
+        jmp finish
+
+        swap_des1:
+            mov dl, byte ptr[esi+1]
+            mov byte ptr[esi], dl
+            mov byte ptr[esi+1], al 
+            jmp next_des1
+    ;------------------PRINT ERROR MESSAGE----------------
+    arg_err:                                
+        push offset arg_mess
+        call StdOut
+        jmp finish
+    arg1_err:
+        push offset arg1_mess
+        call StdOut
+        jmp finish
+    arg2_err:
+        push offset arg2_mess
+        call StdOut
+        jmp finish
+    arg3_err:
+        push offset arg3_mess
+        call StdOut
+
+
+    ;-------------End of the program----------------
+    finish:
+    end start
+

@@ -1,0 +1,123 @@
+include \masm32\include\masm32rt.inc
+    
+.data
+    msg  db "Enter 10 Digit!! : ",0
+    msg1 db "How do you like to arrange the numbers? ",10, 0
+    msg2 db "A/a for ASCENDING", 10, 0
+    msg3 db "D/d for DESCENDING",10, 0
+    msg4 db "Enter The command A or D: ",0
+
+    optin db "Please enter a valid option!  small letter",10,0
+    Num db "Please enter a valid number!  BIG LETTER",10,0
+
+    num1 db 10 dup(?),10,0  
+    input1 db 50 dup(?)
+
+.code
+    start:
+
+        ;mov eax, sval(input("Enter 10 Digit Number : "))            ;INPUT
+        ;mov num1, eax                                               ;moving eax to num1
+    
+        push offset msg
+        call StdOut
+
+        push 50                        
+        push offset num1               ;Get the Input
+        call StdIn                                
+    
+        mov esi, offset num1         
+        mov ecx, LENGTHOF num1                 ;store
+
+        cmp eax, 10                 
+        jne exits                          ;exit
+        
+    checkOpt:
+        push offset msg1
+        call StdOut
+        push offset msg2
+        call StdOut
+        push offset msg3
+        call StdOut
+        push offset msg4
+        call StdOut
+
+        push 50
+        push offset input1
+        call StdIn
+    
+        cmp eax, 1
+        jne exits
+    choics: 
+        mov esi, offset input1                                                 ; moves the entered string to esi
+        
+        mov ah, byte ptr[esi]                                                   ; moves the 1st byte of the string to al
+        mov ebx, 10
+        
+        cmp ah, 'A'                                                             ; compares al to A
+        je ascending                                                            ; if equal, go to ascending
+
+        cmp ah, 'a'                                                             ; compares al to a
+        je ascending                                                            ; if equal, go to ascending
+
+        cmp ah, 'D'                                                             ; compares al to D
+        je descending                                                           ; if equal, go to descending
+
+        cmp ah, 'd'                                                             ; compares al to d
+        je descending 
+        
+
+    ascending:
+        mov ecx, 9                                                             ; moves 9 to ecx because the 10th number cannot be compared to anything else
+        mov esi, offset num1                                                   ; moves the number to esi
+        
+        
+    sortAsc:
+        mov al, byte ptr[esi]                                                   ; moves the 1st byte of the string to al
+        mov dl, byte ptr [esi+1]                                                ; moves the 2nd byte of the string to dl
+        cmp al, dl                                                              ; compares al to dl
+        ja swapAsc                                                              ; if dl > al, go to swapAsc
+
+    nextAsc:
+        inc esi                                                                 ; increments esi
+        loop sortAsc                                                            ; loops sortAsc
+        dec ebx                                                                 ; decrements ebx
+        cmp ebx, 0                                                              ; compares ebx to 0
+        je prints                                                               ; if equal, go to finish
+        jmp ascending                                                           ; if not, go to ascending
+        
+    swapAsc:
+        mov byte ptr[esi], dl                                                   ; moves the 2nd byte to the 1st byte of esi
+        mov byte ptr[esi+1], al                                                 ; moves the 1st byte to the 2nd byte of esi
+        jmp nextAsc                                                             ; go to nextAsc
+
+    descending:
+        mov ecx, 9                                                              ; moves 9 to ecx because the 10th number cannot be compared to anything else
+        mov esi, offset num1                                                    ; moves the number to esi
+
+    sortDes:
+        mov al, byte ptr[esi]                                                   ; moves the 1st byte of the string to al
+        mov dl, byte ptr [esi+1]                                                ; moves the 2nd byte of the string to dl
+        cmp al, dl                                                              ; compares al to dl
+        jb swapDes                                                              ; if dl < al, go to swapDes
+
+    nextDes:
+        inc esi                                                                 ; increment esi
+        loop sortDes                                                            ; loop sortDes
+        dec ebx                                                                 ; decrement ebx
+        cmp ebx, 0                                                              ; compares ebx to 0
+        je prints                                                               ; if equal, go to finish
+        jmp descending                                                          ; if not, go to ascending
+        
+    swapDes:
+        mov byte ptr[esi], dl                                                   ; moves the 2nd byte to the 1st byte of esi
+        mov byte ptr[esi+1], al                                                 ; moves the 1st byte to the 2nd byte of esi
+        jmp nextDes 
+        
+    prints:
+        push offset num1
+        call StdOut
+        jmp exits
+        
+    exits:   
+        end start
