@@ -1,0 +1,51 @@
+import 'package:flutter/material.dart';
+
+class HoverButton extends StatefulWidget {
+  @override
+  _HoverButtonState createState() => _HoverButtonState();
+}
+
+class _HoverButtonState extends State<HoverButton> {
+  bool isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        // Add your button's functionality here
+      },
+      onHover: (value) {
+        setState(() {
+          isHovered = value;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: Text(
+          'Hover Button',
+          style: TextStyle(
+            color: isHovered ? Colors.blue : Colors.black,
+            fontSize: 18.0,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: Scaffold(
+      appBar: AppBar(
+        title: Text('Hover Button Example'),
+      ),
+      body: Center(
+        child: HoverButton(),
+      ),
+    ),
+  ));
+}

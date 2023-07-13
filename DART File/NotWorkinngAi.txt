@@ -1,0 +1,32 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+Future<List<String>> fetchSearchResults(String query) async {
+  final apiUrl = 'https://api.example.com/search?q=$query';
+
+  final response = await http.get(Uri.parse(apiUrl));
+
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+    final List<String> results = List<String>.from(data['results']);
+    return results;
+  } else {
+    throw Exception('Failed to fetch search results');
+  }
+}
+Future<void> performSearch() async {
+  print('Enter your search query:');
+  final query = stdin.readLineSync();
+
+  try {
+    final results = await fetchSearchResults(query);
+    print('Search results:');
+    for (final result in results) {
+      print(result);
+    }
+  } catch (e) {
+    print('Error: $e');
+  }
+}
+void main() {
+  performSearch();
+}

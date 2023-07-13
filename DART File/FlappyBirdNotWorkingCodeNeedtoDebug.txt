@@ -1,0 +1,209 @@
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:flame/flame.dart';
+import 'package:flame/game.dart';
+import 'package:flame/sprite.dart';
+import 'package:flame/flame_audio.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Flame.util.fullScreen();
+  await Flame.util.setOrientation(DeviceOrientation.portraitUp);
+  runApp(FlappyBirdGame().widget);
+}
+
+class FlappyBirdGame extends BaseGame {
+  static const double gravity = 1000;
+  static const double jumpForce = -400;
+  static const double groundHeight = 80;
+  static const double pipeGap = 200;
+  static const double pipeWidth = 100;
+  static const double pipeSpeed = 250;
+
+  late Bird bird;
+  late Ground ground;
+  double? creationTimer = 0;
+  List<Pipe> pipes = [];
+  bool isGameover = false;
+  FlameAudio audio = FlameAudio();
+
+  @override
+  Future<void> onLoad() async {
+    final birdSprite = await Sprite.load('bird.png');
+    bird = Bird(birdSprite);
+    add(bird);
+
+    final groundSprite = await Sprite.load('ground.png');
+    ground = Ground(groundSprite);
+    add(ground);
+
+    audio.loop('background_music.mp3');
+  }
+
+  @override
+  void update(double dt) {
+    if (isGameover) return;
+
+    bird.update(dt);
+    ground.update(dt);
+
+    creationTimer! += dt;
+    if (creationTimer! >= 2) {
+      createPipe();
+      creationTimer = 0;
+    }
+
+    pipes.forEach((pipe) => pipe.update(dt));
+
+    pipes.removeWhere((pipe) {
+      if (pipe.isOffScreen()) {
+        remove(pipe);
+        return true;
+      } else {
+        return false;
+      }
+    });
+
+    if (bird.isGrounded(groundHeight) || bird.collidesWithPipes(pipes)) {
+      gameOver();
+    }
+
+    super.update(dt);
+  }
+
+  void createPipe() {
+    final pipeTop = Pipe(true);
+    final pipeBottom = Pipe(false);
+
+    add(pipeTop);
+    add(pipeBottom);
+    pipes.addAll([pipeTop, pipeBottom]);
+  }
+
+  void gameOver() {
+    isGameover = true;
+    audio.play('game_over_sound.mp3');
+  }
+
+  @override
+  void onTap() {
+    if (isGameover) {
+      pipes.forEach(remove);
+      pipes.clear();
+      bird.reset();
+      ground.reset();
+      isGameover = false;
+      creationTimer = 0;
+      audio.play('background_music.mp3');
+    } else {
+      bird.jump(jumpForce);
+    }
+  }
+}
+
+class Bird extends SpriteComponent {
+  static const double birdSize = 50;
+  double velocity = 0;
+
+  Bird(Sprite sprite)
+      : super.fromSprite(birdSize, birdSize, sprite);
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    y += velocity * dt + 0.5 * FlappyBirdGame.gravity * dt * dt;
+    velocity += FlappyBirdGame.gravity * dt;
+  }
+
+  void jump(double force) {
+    velocity = force;
+  }
+
+  bool isGrounded(double groundHeight) {
+    return y + height / 2 >= screenSize.height - groundHeight;
+  }
+
+  bool collidesWithPipes(List<Pipe> pipes) {
+    for (final pipe in pipes) {
+      if (toRect().overlaps(pipe.toRect())) {
+        return true;
+      }
+
+      return false;
+    }
+
+    void reset() {
+      y = (screenSize.height - FlappyBirdGame.groundHeight) / 2;
+      velocity = 0;
+    }
+  }
+
+  class Pipe extends SpriteComponent {
+  static const double pipeHeight = 600;
+  bool isTopPipe;
+
+  Pipe(this.isTopPipe)
+      : super.fromSprite(
+  FlappyBirdGame.pipeWidth,
+  pipeHeight,
+  Sprite('pipe.png'),
+  );
+
+  @override
+  void update(double dt) {
+  super.update(dt);
+  x -= FlappyBirdGame.pipeSpeed * dt;
+  }
+
+  bool isOffScreen() {
+  return x + width < 0;
+  }
+  }
+
+  class Ground extends SpriteComponent {
+  Ground(Sprite sprite)
+      : super.fromSprite(
+  screenSize.width,
+  FlappyBirdGame.groundHeight,
+  sprite,
+  );
+
+  @override
+  void update(double dt) {
+  super.update(dt);
+  x -= FlappyBirdGame.pipeSpeed * dt;
+  if (x <= -width) {
+  x = 0;
+  }
+  }
+
+  void reset() {
+  x = 0;
+  }
+  }
+
+  class FlappyBirdGameApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+  return MaterialApp(
+  debugShowCheckedModeBanner: false,
+  home: Scaffold(
+  body: Container(
+  decoration: BoxDecoration(
+  image: DecorationImage(
+  image: AssetImage('background.png'),
+  fit: BoxFit.cover,
+  ),
+  ),
+  child: GameWidget(
+  game: FlappyBirdGame(),
+  ),
+  ),
+  ),
+  );
+  }
+  }
+
+  void main() {
+  runApp(FlappyBirdGameApp());
+  }

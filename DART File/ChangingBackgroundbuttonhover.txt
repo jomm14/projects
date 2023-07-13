@@ -1,0 +1,49 @@
+import 'package:flutter/material.dart';
+
+class HoverButton extends StatefulWidget {
+  @override
+  _HoverButtonState createState() => _HoverButtonState();
+}
+
+class _HoverButtonState extends State<HoverButton> {
+  bool isHovered = false;
+
+  void _handleHover(bool isHovered) {
+    setState(() {
+      this.isHovered = isHovered;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onHover: (event) => _handleHover(true),
+      onExit: (event) => _handleHover(false),
+      child: ElevatedButton(
+        onPressed: () {
+          // Add your button's functionality here
+        },
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(
+            isHovered ? Colors.blue : Colors.green,
+          ),
+          foregroundColor: MaterialStateProperty.all(Colors.white),
+        ),
+        child: Text('Hover Button'),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: Scaffold(
+      appBar: AppBar(
+        title: Text('Hover Button Example'),
+      ),
+      body: Center(
+        child: HoverButton(),
+      ),
+    ),
+  ));
+}
